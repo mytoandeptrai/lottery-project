@@ -1,7 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider as Provider } from '@tanstack/react-query';
-// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useEffect, useState, type ReactNode } from 'react';
 
 const queryClient = new QueryClient({
@@ -29,8 +29,9 @@ const QueryClientProvider = ({ children }: ProvidersProps) => {
   return (
     <Provider client={queryClient}>
       <>{isMounted ? children : <></>}</>
-
-      {/* <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} /> */}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
+      )}
     </Provider>
   );
 };

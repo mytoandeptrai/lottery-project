@@ -55,3 +55,8 @@ export function numberFormatter(num: number, digits = 1) {
   const item = NUMBER_FORMAT_LOOK_UP.findLast((item) => num >= item.value);
   return item ? (num / item.value).toFixed(digits).replace(regexp, '').concat(item.symbol) : '0';
 }
+
+export const formatAddress = (addr: string) => {
+  if (!addr) return '';
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+};
