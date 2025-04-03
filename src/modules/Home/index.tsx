@@ -1,22 +1,19 @@
 'use client';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { ADDRESS_CONTRACT } from '@/config/smart-contract';
 import { ABI } from '@/config/smart-contract';
+import HomeConnectWallet from '@/modules/Home/components/home-connect-wallet';
 import HomeInformation from '@/modules/Home/components/home-information';
+import HomeLanding from '@/modules/Home/components/home-landing';
 import HomeStatistic from '@/modules/Home/components/home-statistic';
+import HomeTitle from '@/modules/Home/components/home-title';
 import HomeWheel from '@/modules/Home/components/home-wheel';
-import { formatAddress, handleToastError } from '@/utils/common';
-import { Wallet } from 'lucide-react';
+import { handleToastError } from '@/utils/common';
 import React, { useEffect } from 'react';
-import { toast } from 'sonner';
 import { useAccount, useChains, useConnect, useDisconnect, useReadContract, useWriteContract } from 'wagmi';
-import { metaMask } from 'wagmi/connectors';
 const Home = () => {
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, isConnecting } = useAccount();
   const chain = useChains();
 
   const { data: currentDrawInfo, isLoading: isLoadingCurrentDrawInfo } = useReadContract({
@@ -50,40 +47,13 @@ const Home = () => {
   return (
     <div className='container mx-auto px-4 py-8'>
       <div className='mb-8 flex flex-col items-center justify-center'>
-        <h1 className='mb-2 font-bold text-4xl'>Web3 Lottery</h1>
-        <p className='mb-6 text-muted-foreground'>Buy tickets, win prizes, have fun!</p>
+        {/* <h1 className='mb-2 font-bold text-4xl'>Web3 Lottery</h1>
+        <p className='mb-6 text-muted-foreground'>The fairest, most transparent lottery on the blockchain. Buy tickets, win prizes, and have fun!</p> */}
 
-        {/* <Button onClick={buyTicket} className="flex items-center">
-            Buy Ticket
-          </Button> */}
-
-        {!isConnected ? (
-          <Button onClick={() => connect({ connector: metaMask() })} className='flex items-center'>
-            <Wallet className='mr-2 h-4 w-4' /> Connect Wallet
-          </Button>
-        ) : (
-          <div className='flex flex-col items-center'>
-            <Badge
-              variant='outline'
-              className='mb-2'
-              onClick={() =>
-                toast('Event has been created.', {
-                  description: 'This is a description',
-                  action: {
-                    label: 'Undo',
-                    onClick: () => console.log('Undo'),
-                  },
-                })
-              }
-            >
-              Connected: {formatAddress(address!)}
-            </Badge>
-            <Button variant='outline' size='sm' onClick={() => disconnect()}>
-              Disconnect
-            </Button>
-          </div>
-        )}
+        <HomeTitle />
+        <HomeConnectWallet />
       </div>
+      <HomeLanding />
       <HomeInformation />
       <HomeStatistic />
       <HomeWheel />
