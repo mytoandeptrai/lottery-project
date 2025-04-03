@@ -1,21 +1,26 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useHomeStatus } from '@/hooks/use-home-status';
 import { formatAddress } from '@/utils/common';
-import { RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import React from 'react';
 import Loading from './loading';
-import { useAccount } from 'wagmi';
 const HomeStatus = () => {
-  const { isConnected, isConnecting } = useAccount();
-  const ticketPrice = 0.01;
-  const prizePool = 100;
-  const participants = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const drawCompleted = true;
-  const winner = '0x1234567890123456789012345678901234567890';
-  const ticket = 1;
+  const {
+    participantCount,
+    currentPrize,
+    isDrawCompleted,
+    winner,
+    isLoadingAll,
+    isConnected,
+    userTicket,
+    ticketPrice,
+    isFetchingAll,
+    onRefreshData,
+  } = useHomeStatus();
 
-  if (isConnecting) return <Loading />;
+  if (isLoadingAll) return <Loading />;
 
   if (!isConnected) return null;
 
@@ -32,21 +37,25 @@ const HomeStatus = () => {
         </div>
         <div className='flex justify-between'>
           <span className='text-muted-foreground'>Prize Pool:</span>
-          <span className='font-medium'>{prizePool} ETH</span>
+          <span className='font-medium'>{currentPrize} ETH</span>
         </div>
         <div className='flex justify-between'>
           <span className='text-muted-foreground'>Participants:</span>
-          <span className='font-medium'>{participants.length}</span>
+          <span className='font-medium'>{participantCount}</span>
         </div>
-        <div className='flex justify-between'>
-          <span className='text-muted-foreground'>Your Ticket:</span>
-          <span className='font-medium'>{ticket}</span>
-        </div>
+        {userTicket && (
+          <div className='flex justify-between'>
+            <span className='text-muted-foreground'>Your Ticket:</span>
+            <span className='font-medium'>{userTicket}</span>
+          </div>
+        )}
         <div className='flex justify-between'>
           <span className='text-muted-foreground'>Draw Status:</span>
-          <Badge variant={drawCompleted ? 'default' : 'outline'}>{drawCompleted ? 'Completed' : 'In Progress'}</Badge>
+          <Badge variant={isDrawCompleted ? 'default' : 'outline'}>
+            {isDrawCompleted ? 'Completed' : 'In Progress'}
+          </Badge>
         </div>
-        {drawCompleted && winner && (
+        {isDrawCompleted && winner && (
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Winner:</span>
             <span className='font-medium'>{formatAddress(winner)}</span>
@@ -54,8 +63,16 @@ const HomeStatus = () => {
         )}
       </CardContent>
       <CardFooter>
-        <Button variant='outline' className='w-full'>
-          <RefreshCw className='mr-2 h-4 w-4' /> Refresh Data
+        <Button variant='outline' className='w-full' onClick={onRefreshData} disabled={isFetchingAll}>
+          {isFetchingAll ? (
+            <>
+              <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Refreshing...
+            </>
+          ) : (
+            <>
+              <RefreshCw className='mr-2 h-4 w-4' /> Refresh Data
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

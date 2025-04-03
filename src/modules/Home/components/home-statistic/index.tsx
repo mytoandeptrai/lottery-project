@@ -2,17 +2,15 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useHomeStatistic } from '@/hooks/use-home-statistic';
 import { formatAddress } from '@/utils/common';
 import React from 'react';
-import { useAccount } from 'wagmi';
 import Loading from './loading';
 
 const HomeStatistic = () => {
-  const { isConnected, isConnecting } = useAccount();
-  const participants = [1, 2, 3, 4, 5];
-  const winner = participants[Math.floor(Math.random() * participants.length)];
+  const { participants, isLoadingAll, isConnected } = useHomeStatistic();
 
-  if (isConnecting) return <Loading />;
+  if (isLoadingAll) return <Loading />;
 
   if (!isConnected || participants.length === 0) return null;
 
@@ -25,9 +23,8 @@ const HomeStatistic = () => {
       <CardContent>
         <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
           {participants.map((participant, index) => (
-            <Badge key={index} variant={winner === participant ? 'default' : 'outline'} className='justify-center py-2'>
-              {formatAddress(participant.toString())}
-              {winner === participant && ' (Winner)'}
+            <Badge key={index} variant={'outline'} className='justify-center py-2' title={participant.toString()}>
+              {formatAddress(participant.toString(), 10)}
             </Badge>
           ))}
         </div>

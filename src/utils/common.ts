@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { BaseError } from 'wagmi';
 import { FILE_FORMAT, NUMBER_FORMAT_LOOK_UP } from './const';
 
 export const range = (start: number, end: number) => {
@@ -45,9 +46,9 @@ export const shuffleArray = <T>(array: T[]): T[] => {
   return shuffled;
 };
 
-export const handleToastError = (error: any, defaultError = 'Something went wrong') => {
-  console.error(error);
-  toast.error(error?.shortMessage ?? error?.message ?? error?.cause?.message ?? defaultError);
+export const handleToastError = (error: BaseError, defaultError = 'Something went wrong') => {
+  // console.error(error);
+  toast.error(error?.shortMessage ?? error?.message ?? defaultError);
 };
 
 export function numberFormatter(num: number, digits = 1) {
@@ -56,7 +57,52 @@ export function numberFormatter(num: number, digits = 1) {
   return item ? (num / item.value).toFixed(digits).replace(regexp, '').concat(item.symbol) : '0';
 }
 
-export const formatAddress = (addr: string) => {
+export const formatAddress = (addr: string, length = 6) => {
   if (!addr) return '';
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  return `${addr.slice(0, length)}...${addr.slice(-length)}`;
+};
+
+export const formatCurrency = (value: number | string, currency = 'ETH', decimals = 4) => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return '0 ' + currency;
+
+  const formatted = num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  });
+
+  return `${formatted} ${currency}`;
+};
+
+export const parseContractError = (error: unknown): string | null => {
+  if (!error) return null;
+
+  // If it's a BaseError from wagmi
+  if (error instanceof BaseError) {
+    // Try to get the short message first
+    if (error.shortMessage) return error.shortMessage;
+
+    // If no short message, try to extract from the details
+    const match = error.message.match(/execution reverted: (.+)/);
+    if (match && match[1]) return match[1];
+
+    // If still no message, return the full message
+    return error.message;
+  }
+
+  // If it's a string
+  if (typeof error === 'string') {
+    const match = error.match(/execution reverted: (.+)/);
+    if (match && match[1]) return match[1];
+    return error;
+  }
+
+  // If it's an Error object
+  if (error instanceof Error) {
+    const match = error.message.match(/execution reverted: (.+)/);
+    if (match && match[1]) return match[1];
+    return error.message;
+  }
+
+  return 'Unknown error';
 };

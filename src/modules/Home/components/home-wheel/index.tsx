@@ -1,68 +1,25 @@
-import React, { useState, useCallback } from 'react';
-import WheelOfLuckyGame from '@/components/ui/wheel-of-lucky-game';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { useAccount } from 'wagmi';
+import WheelOfLuckyGame from '@/components/ui/wheel-of-lucky-game';
+import { useWheel } from '@/hooks/use-wheel';
+import React from 'react';
 import Loading from './loading';
 
-// Mock data for the wheel
 const wheelData = Array.from({ length: 10 }, (_, i) => ({
   option: `Ticket ${i + 1}`,
-  // style: {
-  //   backgroundColor: i % 2 === 0 ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-  //   textColor: i % 2 === 0 ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
-  // },
 }));
 
 const HomeWheel = () => {
-  const { isConnected, isConnecting } = useAccount();
-  const [mustSpin, setMustSpin] = useState(false);
-  const [prizeNumber, setPrizeNumber] = useState(0);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
-
-  // Mock function to interact with smart contract
-  const sendToSmartContract = useCallback((ticketNumber: number) => {
-    // This would be replaced with actual smart contract interaction
-    console.log(`Sending ticket number ${ticketNumber} to smart contract`);
-
-    // Simulate transaction delay
-    setTimeout(() => {
-      toast.success('Transaction Successful', {
-        description: `Ticket ${ticketNumber} has been selected and sent to the blockchain.`,
-      });
-    }, 1500);
-  }, []);
-
-  const handleSpinClick = () => {
-    if (isSpinning) return;
-
-    setIsSpinning(true);
-    setMustSpin(true);
-
-    // Generate a random number between 0 and 9 (for 10 tickets)
-    const randomNumber = Math.floor(Math.random() * 10);
-    setPrizeNumber(randomNumber);
-  };
-
-  const handleStopSpinning = () => {
-    setMustSpin(false);
-    setIsSpinning(false);
-
-    // Get the selected ticket number (0-based index)
-    const selectedTicketNumber = prizeNumber + 1;
-    setSelectedTicket(selectedTicketNumber);
-
-    // Send to smart contract
-    sendToSmartContract(selectedTicketNumber);
-  };
-
-  const data = [
-    { option: '0', style: { backgroundColor: 'green', textColor: 'black' } },
-    { option: '1', style: { backgroundColor: 'white' } },
-    { option: '2' },
-  ];
+  const {
+    isConnected,
+    isConnecting,
+    mustSpin,
+    prizeNumber,
+    isSpinning,
+    selectedTicket,
+    handleStopSpinning,
+    handleSpinClick,
+  } = useWheel();
 
   if (isConnecting) return <Loading />;
 
