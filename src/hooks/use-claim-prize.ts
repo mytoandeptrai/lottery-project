@@ -1,5 +1,8 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
-import { useCallback } from 'react';
+import { handleToastError } from '@/utils/common';
+import { useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
+import type { BaseError } from 'wagmi';
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 export const useClaimPrize = () => {
@@ -40,7 +43,7 @@ export const useClaimPrize = () => {
         functionName: 'claimPrize',
       });
     } catch (error) {
-      console.error(error);
+      handleToastError(error as BaseError);
     }
   }, [claimPrize]);
 
@@ -48,6 +51,16 @@ export const useClaimPrize = () => {
     !isConnected || isClaimingPrize || isLoadingIsDrawCompleted || isConfirming || isConfirmed || isLoadingWinner;
 
   const shouldShowClaimPrize = isDrawCompleted && winner === address;
+
+  useEffect(() => {
+    if (isConfirmed) {
+      toast.success('Claim prize successfully, Please check your wallet!');
+    }
+
+    if (isConfirming) {
+      toast.info('Waiting for the confirmation...');
+    }
+  }, [isConfirming, isConfirmed]);
 
   return {
     isDisabledBtn,

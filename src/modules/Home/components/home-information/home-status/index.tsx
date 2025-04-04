@@ -10,13 +10,13 @@ const HomeStatus = () => {
   const {
     participantCount,
     currentPrize,
-    isDrawCompleted,
     winner,
     isLoadingAll,
     isConnected,
     userTicket,
     ticketPrice,
     isFetchingAll,
+    lotteryState,
     onRefreshData,
   } = useHomeStatus();
 
@@ -51,11 +51,9 @@ const HomeStatus = () => {
         )}
         <div className='flex justify-between'>
           <span className='text-muted-foreground'>Draw Status:</span>
-          <Badge variant={isDrawCompleted ? 'default' : 'outline'}>
-            {isDrawCompleted ? 'Completed' : 'In Progress'}
-          </Badge>
+          <Badge variant={lotteryState === 'COMPLETED' ? 'default' : 'outline'}>{lotteryState}</Badge>
         </div>
-        {isDrawCompleted && winner && (
+        {lotteryState === 'COMPLETED' && winner && (
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Winner:</span>
             <span className='font-medium'>{formatAddress(winner)}</span>

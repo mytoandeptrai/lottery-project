@@ -7,12 +7,14 @@ import { type BaseError, useAccount, useReadContract, useWaitForTransactionRecei
 export const useStartDraw = () => {
   const { isConnected } = useAccount();
 
+  /** Read contract */
   const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
     functionName: 'isDrawCompleted',
   });
 
+  /** Write contract */
   const {
     writeContractAsync: startNewDraw,
     isPending: isStartingNewDraw,
@@ -21,6 +23,12 @@ export const useStartDraw = () => {
     reset: resetStartNewDraw,
   } = useWriteContract();
 
+  /** Wait for transaction receipt */
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: startNewDrawHash,
+  });
+
+  /** Functionalities */
   const onStartNewDraw = useCallback(async () => {
     try {
       await startNewDraw({
@@ -33,10 +41,6 @@ export const useStartDraw = () => {
       handleToastError(error as BaseError);
     }
   }, [startNewDraw]);
-
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash: startNewDrawHash,
-  });
 
   const isDisabledBtn =
     !isConnected ||

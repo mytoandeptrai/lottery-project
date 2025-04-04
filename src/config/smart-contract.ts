@@ -62,6 +62,13 @@ const ABI = [
   },
   {
     inputs: [],
+    name: 'getLotteryState',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'getParticipantCount',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
@@ -111,6 +118,13 @@ const ABI = [
   },
   {
     inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
+    name: 'isOwner',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
     name: 'isRegistered',
     outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
     stateMutability: 'view',
@@ -132,6 +146,6 @@ const ABI = [
   },
   { inputs: [], name: 'withdrawPrize', outputs: [], stateMutability: 'nonpayable', type: 'function' },
 ];
-const ADDRESS_CONTRACT = '0x825730Cc5b41Ece62df71830fb1A7990E1929b61';
+const ADDRESS_CONTRACT = '0x1feec79e4a69019550fffeb271f1e085365cade6';
 
 export { ABI, ADDRESS_CONTRACT };

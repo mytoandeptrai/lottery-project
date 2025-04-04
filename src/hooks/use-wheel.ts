@@ -36,13 +36,14 @@ type DrawResultLog = {
 };
 
 export const useWheel = () => {
-  const { isConnected, isConnecting } = useAccount();
+  const { isConnected, isConnecting, address } = useAccount();
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
   const [isPerformingDraw, setIsPerformingDraw] = useState(false);
 
+  /** Read contract */
   const { data: currentPrize } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
@@ -52,8 +53,20 @@ export const useWheel = () => {
     },
   });
 
+  const { data: isOwner } = useReadContract({
+    address: ADDRESS_CONTRACT,
+    abi: ABI,
+    functionName: 'isOwner',
+    args: [address],
+    query: {
+      enabled: !!address && isConnected,
+    },
+  });
+
+  /** Write contract */
   const { writeContractAsync: performDraw, data: hash, isPending: isPerformingDrawPending } = useWriteContract();
 
+  /** Confirm transaction */
   const { isLoading: isConfirming, error: confirmError } = useWaitForTransactionReceipt({
     hash,
   });
@@ -69,6 +82,10 @@ export const useWheel = () => {
         const drawId = Number(log.args.drawId);
         const winningTicket = Number(log.args.winningTicket);
         const winner = log.args.winner;
+
+        console.log('drawId', drawId);
+        console.log('winningTicket', winningTicket);
+        console.log('winner', winner);
 
         const storageData = localStorage.getItem('lottery_winners');
         if (storageData) {
@@ -135,6 +152,7 @@ export const useWheel = () => {
     selectedTicket,
     prizeNumber,
     isPerformingDraw: isPerformingDraw || isPerformingDrawPending || isConfirming,
+    isOwner: Boolean(isOwner),
     handleSpinClick,
     handleStopSpinning,
   };

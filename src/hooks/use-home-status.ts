@@ -6,7 +6,6 @@ import { useAccount, useReadContract } from 'wagmi';
 type HomeStatus = {
   participantCount: number;
   currentPrize: string;
-  isDrawCompleted: boolean;
   winner: string;
   isRegistered: boolean;
   isLoadingAll: boolean;
@@ -15,7 +14,16 @@ type HomeStatus = {
   userTicket: number | undefined;
   ticketPrice: string;
   isFetchingAll: boolean;
+  lotteryState: string;
   onRefreshData: () => Promise<void>;
+};
+
+const LOTTERY_MAPPING = {
+  READY_FOR_NEW_DRAW: 'Ready for new draw',
+  NOT_STARTED: 'Not started',
+  IN_PROGRESS: 'In progress',
+  COMPLETED: 'Completed',
+  UNKNOWN: 'Unknown',
 };
 
 export const useHomeStatus = (): HomeStatus => {
@@ -61,14 +69,14 @@ export const useHomeStatus = (): HomeStatus => {
   });
 
   const {
-    data: isDrawCompleted,
-    isLoading: isLoadingIsDrawCompleted,
-    isFetching: isFetchingIsDrawCompleted,
-    refetch: refetchIsDrawCompleted,
+    data: lotteryState,
+    isLoading: isLoadingLotteryState,
+    isFetching: isFetchingLotteryState,
+    refetch: refetchLotteryState,
   } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
-    functionName: 'isDrawCompleted',
+    functionName: 'getLotteryState',
   });
 
   const {
@@ -117,10 +125,10 @@ export const useHomeStatus = (): HomeStatus => {
       refetchUserTicket(),
       refetchParticipantCount(),
       refetchCurrentPrize(),
-      refetchIsDrawCompleted(),
       refetchWinner(),
       refetchIsRegistered(),
       refetchTicketPrice(),
+      refetchLotteryState(),
     ]);
   };
 
@@ -128,24 +136,23 @@ export const useHomeStatus = (): HomeStatus => {
     isConnecting ||
     isLoadingParticipantCount ||
     isLoadingCurrentPrize ||
-    isLoadingIsDrawCompleted ||
     isLoadingWinner ||
     isLoadingIsRegistered ||
     isLoadingUserTicket ||
-    isLoadingTicketPrice;
+    isLoadingTicketPrice ||
+    isLoadingLotteryState;
 
   const isFetchingAll =
     isFetchingParticipantCount ||
     isFetchingCurrentPrize ||
-    isFetchingIsDrawCompleted ||
     isFetchingWinner ||
     isFetchingIsRegistered ||
-    isFetchingUserTicket;
+    isFetchingUserTicket ||
+    isFetchingLotteryState;
 
   return {
     participantCount: participantCount ? Number(participantCount) : 0,
     currentPrize: currentPrize ? formatEther(currentPrize as bigint) : '0',
-    isDrawCompleted: !isDrawCompleted as boolean,
     winner: winner as string,
     isRegistered: isRegistered as boolean,
     isLoadingAll,
@@ -155,5 +162,6 @@ export const useHomeStatus = (): HomeStatus => {
     ticketPrice: ticketPrice ? formatEther(ticketPrice as bigint) : '0',
     isFetchingAll,
     onRefreshData,
+    lotteryState: LOTTERY_MAPPING[(lotteryState ?? 'UNKNOWN') as keyof typeof LOTTERY_MAPPING],
   };
 };

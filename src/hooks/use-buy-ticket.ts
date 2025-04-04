@@ -43,6 +43,7 @@ export const useBuyTicket = () => {
     hash: buyTicketHash,
   });
 
+  /** Functionalities */
   const onBuyTicket = useCallback(async () => {
     try {
       await buyTicket({

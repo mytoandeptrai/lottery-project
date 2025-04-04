@@ -17,6 +17,7 @@ const HomeWheel = () => {
     prizeNumber,
     isSpinning,
     selectedTicket,
+    isOwner,
     handleStopSpinning,
     handleSpinClick,
   } = useWheel();
@@ -30,7 +31,11 @@ const HomeWheel = () => {
       <Card className='w-full'>
         <CardHeader>
           <CardTitle className='text-center font-bold text-2xl'>Lottery Wheel</CardTitle>
-          <CardDescription className='text-center'>Spin the wheel to select your ticket number</CardDescription>
+          <CardDescription className='text-center'>
+            {isOwner
+              ? 'Spin the wheel to select the winning ticket'
+              : 'Only the owner can spin the wheel after 5 participants'}
+          </CardDescription>
         </CardHeader>
         <CardContent className='flex flex-col items-center justify-center'>
           <div className='relative mb-6 aspect-square w-full max-w-md'>
@@ -65,7 +70,7 @@ const HomeWheel = () => {
               <div className='rounded-full bg-white p-1 shadow-lg'>
                 <Button
                   onClick={handleSpinClick}
-                  disabled={isSpinning}
+                  disabled={isSpinning || !isOwner}
                   size='lg'
                   className='h-20 w-20 rounded-full font-bold text-sm transition-transform hover:scale-105'
                   variant='outline'
