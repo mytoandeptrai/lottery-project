@@ -1,12 +1,13 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { handleToastError } from '@/utils/common';
 import { REFRESH_INTERVAL_DRAW, TICKET_PRICE } from '@/utils/const';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { type BaseError, useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-
 export const useBuyTicket = () => {
-  const { isConnected, isConnecting, address } = useAccount();
+  const { isConnected, address } = useAccount();
+  const { shouldRefresh } = useTrackingStore();
 
   /** Read Contract */
   const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
@@ -18,14 +19,17 @@ export const useBuyTicket = () => {
     },
   });
 
-  const { data: isRegistered, isLoading: isLoadingIsRegistered } = useReadContract({
+  const {
+    data: isRegistered,
+    isLoading: isLoadingIsRegistered,
+    refetch: refetchIsRegistered,
+  } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
     functionName: 'isRegistered',
     args: [address!],
     query: {
       enabled: isConnected && !!address,
-      refetchInterval: REFRESH_INTERVAL_DRAW,
     },
   });
 
@@ -35,11 +39,14 @@ export const useBuyTicket = () => {
     data: buyTicketHash,
     isPending: isBuyingTicket,
     error: buyTicketError,
-    reset: resetBuyTicket,
   } = useWriteContract();
 
   /** Wait for Transaction Receipt */
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error,
+  } = useWaitForTransactionReceipt({
     hash: buyTicketHash,
   });
 
@@ -69,13 +76,15 @@ export const useBuyTicket = () => {
 
   useEffect(() => {
     if (isConfirmed) {
-      toast.success('Draw started successfully');
+      toast.success('Buy ticket successfully');
+      refetchIsRegistered();
+      shouldRefresh();
     }
 
     if (isConfirming) {
       toast.info('Waiting for the confirmation...');
     }
-  }, [isConfirming, isConfirmed]);
+  }, [isConfirming, isConfirmed, shouldRefresh, refetchIsRegistered]);
 
   return {
     isDisabledBtn,

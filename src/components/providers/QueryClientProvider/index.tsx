@@ -1,15 +1,16 @@
 'use client';
 
-import { QueryClient, QueryClientProvider as Provider } from '@tanstack/react-query';
+import { AppContextProvider } from '@/components/contexts/app-context';
+import { QueryClientProvider as Provider, QueryClient } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
-      staleTime: 5 * 1000,
+      staleTime: 1000,
       retry: false,
     },
   },
@@ -28,7 +29,9 @@ const QueryClientProvider = ({ children }: ProvidersProps) => {
 
   return (
     <Provider client={queryClient}>
-      <>{isMounted ? children : <></>}</>
+      <AppContextProvider>
+        <>{isMounted ? children : <></>}</>
+      </AppContextProvider>
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
       )}

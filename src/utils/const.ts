@@ -28,7 +28,7 @@ export const FILE_FORMAT = [
   'image/svg+xml',
 ];
 
-export const REFRESH_INTERVAL = 3000;
-export const REFRESH_INTERVAL_DRAW = 1000;
+export const REFRESH_INTERVAL = 10000;
+export const REFRESH_INTERVAL_DRAW = 10000;
 export const DEFAULT_POLLING_INTERVAL = 4000;
 export const TICKET_PRICE = 0.001 * 10 ** 18;

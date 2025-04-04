@@ -28,7 +28,10 @@ const ABI = [
   },
   {
     anonymous: false,
-    inputs: [{ indexed: true, internalType: 'uint256', name: 'drawId', type: 'uint256' }],
+    inputs: [
+      { indexed: true, internalType: 'uint256', name: 'drawId', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'winningTicket', type: 'uint256' },
+    ],
     name: 'NoWinner',
     type: 'event',
   },
@@ -124,16 +127,31 @@ const ABI = [
     type: 'function',
   },
   {
+    inputs: [],
+    name: 'isPrizeWithdrawn',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
     name: 'isRegistered',
     outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
     stateMutability: 'view',
     type: 'function',
   },
+  { inputs: [], name: 'pause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   {
     inputs: [],
     name: 'performDraw',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_ticketPrice', type: 'uint256' }],
+    name: 'setTicketPrice',
+    outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -144,8 +162,9 @@ const ABI = [
     stateMutability: 'payable',
     type: 'function',
   },
+  { inputs: [], name: 'unpause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   { inputs: [], name: 'withdrawPrize', outputs: [], stateMutability: 'nonpayable', type: 'function' },
 ];
-const ADDRESS_CONTRACT = '0x1feec79e4a69019550fffeb271f1e085365cade6';
+const ADDRESS_CONTRACT = '0x1FeEC79E4a69019550fFFeb271F1e085365CaDE6';
 
 export { ABI, ADDRESS_CONTRACT };

@@ -10,17 +10,8 @@ const wheelData = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 const HomeWheel = () => {
-  const {
-    isConnected,
-    isConnecting,
-    mustSpin,
-    prizeNumber,
-    isSpinning,
-    selectedTicket,
-    isOwner,
-    handleStopSpinning,
-    handleSpinClick,
-  } = useWheel();
+  const { isConnected, isConnecting, mustSpin, prizeNumber, isSpinning, isOwner, handleStopSpinning, handleSpinClick } =
+    useWheel();
 
   if (isConnecting) return <Loading />;
 
@@ -80,14 +71,6 @@ const HomeWheel = () => {
               </div>
             </div>
           </div>
-
-          {selectedTicket && (
-            <div className='mb-6 rounded-lg bg-muted p-4 text-center'>
-              <p className='font-medium text-lg'>
-                Selected Ticket: <span className='font-bold text-primary'>{selectedTicket}</span>
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

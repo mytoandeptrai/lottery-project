@@ -1,4 +1,5 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { handleToastError } from '@/utils/common';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -6,6 +7,7 @@ import { type BaseError, useAccount, useReadContract, useWaitForTransactionRecei
 
 export const useStartDraw = () => {
   const { isConnected } = useAccount();
+  const { shouldRefresh } = useTrackingStore();
 
   /** Read contract */
   const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
@@ -55,12 +57,13 @@ export const useStartDraw = () => {
   useEffect(() => {
     if (isConfirmed) {
       toast.success('Draw started successfully');
+      shouldRefresh();
     }
 
     if (isConfirming) {
       toast.info('Waiting for the confirmation...');
     }
-  }, [isConfirming, isConfirmed]);
+  }, [isConfirming, isConfirmed, shouldRefresh]);
 
   return {
     isDrawing: isStartingNewDraw || isConfirming,

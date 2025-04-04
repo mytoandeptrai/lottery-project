@@ -1,4 +1,5 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { handleToastError } from '@/utils/common';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -7,6 +8,7 @@ import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteCont
 
 export const useClaimPrize = () => {
   const { isConnected, address } = useAccount();
+  const { shouldRefresh } = useTrackingStore();
 
   /** Read Contract */
   const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
@@ -40,7 +42,7 @@ export const useClaimPrize = () => {
       await claimPrize({
         address: ADDRESS_CONTRACT,
         abi: ABI,
-        functionName: 'claimPrize',
+        functionName: 'withdrawPrize',
       });
     } catch (error) {
       handleToastError(error as BaseError);
@@ -50,17 +52,18 @@ export const useClaimPrize = () => {
   const isDisabledBtn =
     !isConnected || isClaimingPrize || isLoadingIsDrawCompleted || isConfirming || isConfirmed || isLoadingWinner;
 
-  const shouldShowClaimPrize = isDrawCompleted && winner === address;
+  const shouldShowClaimPrize = winner === address;
 
   useEffect(() => {
     if (isConfirmed) {
       toast.success('Claim prize successfully, Please check your wallet!');
+      shouldRefresh();
     }
 
     if (isConfirming) {
       toast.info('Waiting for the confirmation...');
     }
-  }, [isConfirming, isConfirmed]);
+  }, [isConfirming, isConfirmed, shouldRefresh]);
 
   return {
     isDisabledBtn,

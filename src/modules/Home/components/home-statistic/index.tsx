@@ -12,7 +12,7 @@ const HomeStatistic = () => {
 
   if (isLoadingAll) return <Loading />;
 
-  if (!isConnected || participants.length === 0) return null;
+  if (!isConnected || !participants || participants.length === 0) return null;
 
   return (
     <Card className='mt-6'>

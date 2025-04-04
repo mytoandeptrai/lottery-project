@@ -1,4 +1,5 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { parseContractError } from '@/utils/common';
 import { REFRESH_INTERVAL } from '@/utils/const';
 import { useEffect, useState } from 'react';
@@ -13,41 +14,29 @@ import {
   useWriteContract,
 } from 'wagmi';
 
-interface DrawResult {
-  drawId: number;
-  winningTicket: number;
-  winnerAddress: string;
-  date: Date;
-}
-
-type DrawResultEvent = {
-  drawId: bigint;
-  winningTicket: bigint;
-  winner: `0x${string}`;
-};
-
-type DrawResultLog = {
-  address: `0x${string}`;
-  args: DrawResultEvent;
-  blockNumber: number;
-  eventName: 'DrawResult';
-  logIndex: number;
-  transactionHash: `0x${string}`;
-};
-
 export const useWheel = () => {
   const { isConnected, isConnecting, address } = useAccount();
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
   const [isPerformingDraw, setIsPerformingDraw] = useState(false);
+  const [isNoWinner, setIsNoWinner] = useState(false);
+  const { shouldRefresh } = useTrackingStore();
 
   /** Read contract */
   const { data: currentPrize } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
     functionName: 'getCurrentPrize',
+    query: {
+      refetchInterval: REFRESH_INTERVAL,
+    },
+  });
+
+  const { data: participantCount } = useReadContract({
+    address: ADDRESS_CONTRACT,
+    abi: ABI,
+    functionName: 'getParticipantCount',
     query: {
       refetchInterval: REFRESH_INTERVAL,
     },
@@ -79,13 +68,8 @@ export const useWheel = () => {
     onLogs(logs: any) {
       if (logs && logs.length > 0) {
         const log = logs[0];
-        const drawId = Number(log.args.drawId);
         const winningTicket = Number(log.args.winningTicket);
         const winner = log.args.winner;
-
-        console.log('drawId', drawId);
-        console.log('winningTicket', winningTicket);
-        console.log('winner', winner);
 
         const storageData = localStorage.getItem('lottery_winners');
         if (storageData) {
@@ -109,8 +93,31 @@ export const useWheel = () => {
     },
   });
 
+  useWatchContractEvent({
+    address: ADDRESS_CONTRACT,
+    abi: ABI,
+    eventName: 'NoWinner',
+    onLogs(logs: any) {
+      if (logs && logs.length > 0) {
+        const log = logs[0];
+        const winningTicket = Number(log.args.winningTicket);
+        setMustSpin(true);
+        setIsSpinning(true);
+        setPrizeNumber(winningTicket);
+        setIsNoWinner(true);
+      }
+    },
+  });
+
   const handleSpinClick = async () => {
     if (isSpinning || isPerformingDraw) return;
+
+    if (!participantCount || Number(participantCount) < 5) {
+      toast.error('Not enough participants to perform a draw', {
+        description: 'Please wait for more participants to join the lottery',
+      });
+      return;
+    }
 
     setIsPerformingDraw(true);
     try {
@@ -127,12 +134,18 @@ export const useWheel = () => {
   const handleStopSpinning = () => {
     setMustSpin(false);
     setIsSpinning(false);
-    setSelectedTicket(prizeNumber + 1);
-
-    toast.success('Draw Completed', {
-      description: `Ticket ${prizeNumber + 1} has been selected as the winner!`,
-    });
     setIsPerformingDraw(false);
+    if (isNoWinner) {
+      toast.success('Draw Completed', {
+        description: `No winner this time, please try another time!`,
+      });
+      setIsNoWinner(false);
+    } else {
+      toast.success('Draw Completed', {
+        description: `Ticket ${prizeNumber} has been selected as the winner!`,
+      });
+    }
+    shouldRefresh();
   };
 
   useEffect(() => {
@@ -149,7 +162,6 @@ export const useWheel = () => {
     isSpinning,
     isConnected,
     isConnecting,
-    selectedTicket,
     prizeNumber,
     isPerformingDraw: isPerformingDraw || isPerformingDrawPending || isConfirming,
     isOwner: Boolean(isOwner),

@@ -1,5 +1,7 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { REFRESH_INTERVAL } from '@/utils/const';
+import { useEffect } from 'react';
 import { formatEther } from 'viem';
 import { useAccount, useReadContract } from 'wagmi';
 
@@ -28,6 +30,7 @@ const LOTTERY_MAPPING = {
 
 export const useHomeStatus = (): HomeStatus => {
   const { isConnected, isConnecting, address } = useAccount();
+  const { refreshNumber } = useTrackingStore();
 
   /** Read Contract */
   const {
@@ -132,6 +135,10 @@ export const useHomeStatus = (): HomeStatus => {
     ]);
   };
 
+  useEffect(() => {
+    onRefreshData();
+  }, [refreshNumber]);
+
   const isLoadingAll =
     isConnecting ||
     isLoadingParticipantCount ||
@@ -158,7 +165,7 @@ export const useHomeStatus = (): HomeStatus => {
     isLoadingAll,
     isConnected,
     isConnecting,
-    userTicket: userTicket as number,
+    userTicket: userTicket ? Number(userTicket) : undefined,
     ticketPrice: ticketPrice ? formatEther(ticketPrice as bigint) : '0',
     isFetchingAll,
     onRefreshData,

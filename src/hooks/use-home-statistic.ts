@@ -5,7 +5,7 @@ import { REFRESH_INTERVAL } from '@/utils/const';
 import { useAccount, useReadContract } from 'wagmi';
 
 type HomeStatistic = {
-  participants: string[];
+  participants: string[] | undefined;
   participantCount: number;
   isLoadingAll: boolean;
   isConnected: boolean;
