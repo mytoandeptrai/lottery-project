@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   frontend:
@@ -7,7 +7,6 @@ services:
       args:
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-    # Set envrionment variables based on the .env file
     env_file:
       - .env
     restart: always
@@ -16,4 +15,4 @@ services:
   nginx:
     build: ./docker/nginx
     ports:
-      - '8080:8080'
+      - "8080:8080"

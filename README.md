@@ -1,43 +1,163 @@
-## Intro <a name="intro"></a>
+# 🎲 Lottery Project
 
-This boilerplate is made for creating NextJS application easier and faster.
+A decentralized lottery application built with Next.js, Wagmi, and Viem for blockchain interactions.
 
-## Getting started: <a name="getting-started"></a>
+## 🚀 Tech Stack
 
-1. When you're using Windows run this:
+- **Framework**: Next.js 15
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI, Mantine Hooks
+- **State Management**: Zustand, React Query
+- **Blockchain Interaction**: Wagmi, Viem
+- **Form Handling**: React Hook Form
+- **Notifications**: Sonner
+- **Code Quality**: Biome (linting, formatting)
+- **Package Manager**: pnpm
 
-   - `git config --global core.eol lf`
-   - `git config --global core.autocrlf input`
+## 📋 Prerequisites
 
-   #### This will change eol(End of line) to the same as on Linux/Mac, without this, you will have conflicts with your teammates with those systems and our bash script won't work
+- Node.js 18 or higher
+- pnpm (recommended) or npm
+- Docker and Docker Compose (for containerized deployment)
+- MetaMask or another Web3 wallet
 
-2. Clone this repository.
-3. Install pnpm globally: `npm install -g pnpm` (check your node version >= 18)
-4. Run `pnpm install`
+## 🚀 Getting Started
 
----
+### Local Development
 
-### Run the development server
+1. Clone the repository:
 
-```bash
-pnpm dev
-```
+   ```bash
+   git clone <repository-url>
+   cd lottery-project
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+   ```bash
+   pnpm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Create a `.env` file based on `.env.example`:
 
-## Learn More
+   ```bash
+   cp .env.example .env
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Update the environment variables in `.env` as needed.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Configure your smart contract:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   - Open `src/config/smart-contract.ts`
+   - Replace the `ADDRESS_CONTRACT` with your deployed lottery contract address
+   - Replace the `ABI` with your contract's ABI (you can get this from your contract compilation output)
 
----
+   ```typescript
+   // src/config/smart-contract.ts
+   export const ADDRESS_CONTRACT = "0x1234..."; // Replace with your contract address
 
-Made by [HoangDevNull](https://github.com/hoangdevnull)
+   export const ABI = [
+     // Replace with your contract ABI
+     // You can get this from your contract compilation output
+   ];
+   ```
+
+6. Start the development server:
+
+   ```bash
+   pnpm dev
+   ```
+
+7. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
+
+1. Build the application:
+
+   ```bash
+   pnpm build
+   ```
+
+2. Start the production server:
+   ```bash
+   pnpm start
+   ```
+
+## 🐳 Docker Deployment
+
+### Development Environment
+
+1. Build and start the containers:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Access the application at [http://localhost:8080](http://localhost:8080)
+
+### Production Environment
+
+1. Build the production image:
+
+   ```bash
+   docker build -t lottery-project:prod -f docker/Dockerfile .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 3000:3000 --env-file .env lottery-project:prod
+   ```
+
+## 📁 Project Structure
+
+- `src/` - Source code
+  - `components/` - Reusable UI components
+  - `hooks/` - Custom React hooks
+  - `stores/` - Zustand state stores
+  - `types/` - TypeScript type definitions
+  - `utils/` - Utility functions
+  - `constants/` - Application constants
+  - `config/` - Configuration files
+  - `app/` - Next.js app router pages
+
+## 🔗 Smart Contract Integration
+
+The application interacts with a lottery smart contract using Wagmi and Viem. Key hooks include:
+
+- `useContractRead` - For reading data from the smart contract
+- `useContractTransaction` - For executing transactions on the smart contract
+- `useWheel` - For managing the lottery wheel functionality
+- `useHomeStatistic` - For displaying lottery statistics
+- `useHomeStatus` - For showing the current lottery status
+
+### Contract Configuration
+
+Before running the application, you need to configure your smart contract:
+
+1. Deploy your lottery smart contract to your chosen network (e.g., Ethereum, Polygon, etc.)
+2. Copy the deployed contract address
+3. Get the ABI from your contract compilation output
+4. Update the `src/config/smart-contract.ts` file with your contract address and ABI
+
+## 📜 Available Scripts
+
+- `pnpm dev` - Start development server with Turbopack
+- `pnpm build` - Build the application for production
+- `pnpm start` - Start the production server
+- `pnpm lint` - Run Biome linter
+- `pnpm lint:fix` - Fix linting issues
+- `pnpm format:check` - Check code formatting
+- `pnpm format:fix` - Fix code formatting
+- `pnpm type-check` - Run TypeScript type checking
+
+## 🤝 Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Run linting and formatting checks
+4. Submit a pull request
+
+## 📄 License
+
+[MIT](LICENSE)

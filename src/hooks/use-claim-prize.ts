@@ -1,76 +1,45 @@
-import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
-import { useTrackingStore } from '@/stores/tracking-store';
-import { handleToastError } from '@/utils/common';
-import { useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
-import type { BaseError } from 'wagmi';
-import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { TOAST_MESSAGES } from '@/constants/messages';
+import { useCallback } from 'react';
+import { useAccount } from 'wagmi';
+import { useContractRead } from './use-contract-read';
+import { useContractTransaction } from './use-contract-transaction';
 
 export const useClaimPrize = () => {
   const { isConnected, address } = useAccount();
-  const { shouldRefresh } = useTrackingStore();
 
   /** Read Contract */
   const {
     data: winner,
     isLoading: isLoadingWinner,
     refetch: refetchWinner,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getWinner',
   });
 
-  const { data: isPrizeWithdrawn, refetch: refetchIsPrizeWithdrawn } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: isPrizeWithdrawn, refetch: refetchIsPrizeWithdrawn } = useContractRead({
     functionName: 'isPrizeWithdrawn',
   });
 
-  /** Write Contract */
-  const { writeContractAsync: claimPrize, data: claimPrizeHash, isPending: isClaimingPrize } = useWriteContract();
+  const onSuccess = useCallback(() => {
+    refetchWinner();
+    refetchIsPrizeWithdrawn();
+  }, [refetchIsPrizeWithdrawn, refetchWinner]);
 
-  /** Wait for Transaction Receipt */
+  /** Write Contract */
   const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: claimPrizeError,
-  } = useWaitForTransactionReceipt({
-    hash: claimPrizeHash,
+    execute: onClaimPrize,
+    isExecuting: isClaimingPrize,
+    isDisabled,
+  } = useContractTransaction({
+    functionName: 'withdrawPrize',
+    successMessage: TOAST_MESSAGES.CLAIM_PRIZE.SUCCESS,
+    waitingMessage: TOAST_MESSAGES.CLAIM_PRIZE.WAITING,
+    onSuccess,
   });
 
-  const onClaimPrize = useCallback(async () => {
-    try {
-      await claimPrize({
-        address: ADDRESS_CONTRACT,
-        abi: ABI,
-        functionName: 'withdrawPrize',
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }, [claimPrize]);
-
-  useEffect(() => {
-    if (isConfirmed) {
-      toast.success('Claim prize successfully, Please check your wallet!');
-      refetchWinner();
-      refetchIsPrizeWithdrawn();
-      shouldRefresh();
-    }
-
-    if (isConfirming) {
-      toast.info('Waiting for the confirmation...');
-    }
-
-    if (claimPrizeError) {
-      handleToastError(claimPrizeError as BaseError);
-    }
-  }, [isConfirming, isConfirmed, shouldRefresh, claimPrizeError, refetchWinner, refetchIsPrizeWithdrawn]);
-
   return {
-    isDisabledBtn: !isConnected || isClaimingPrize || isConfirming || isLoadingWinner,
-    isClaimingPrize: isClaimingPrize || isConfirming,
+    isDisabledBtn: !isConnected || isClaimingPrize || isLoadingWinner || isDisabled,
+    isClaimingPrize,
     shouldShowClaimPrize: winner === address,
     hasClaimedPrize: Boolean(isPrizeWithdrawn) && winner === address,
     onClaimPrize,

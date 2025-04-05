@@ -1,9 +1,9 @@
-import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
 import { useTrackingStore } from '@/stores/tracking-store';
 import { REFRESH_INTERVAL } from '@/utils/const';
 import { useEffect } from 'react';
 import { formatEther } from 'viem';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { useContractRead } from './use-contract-read';
 
 type HomeStatus = {
   participantCount: number;
@@ -26,6 +26,7 @@ const LOTTERY_MAPPING = {
   IN_PROGRESS: 'In progress',
   COMPLETED: 'Completed',
   UNKNOWN: 'Unknown',
+  WAITING_FOR_PRIZE_CLAIM: 'Waiting for prize claim',
 };
 
 export const useHomeStatus = (): HomeStatus => {
@@ -38,13 +39,9 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingParticipantCount,
     isFetching: isFetchingParticipantCount,
     refetch: refetchParticipantCount,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getParticipantCount',
-    query: {
-      refetchInterval: REFRESH_INTERVAL,
-    },
+    refetchInterval: REFRESH_INTERVAL,
   });
 
   const {
@@ -52,22 +49,16 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingCurrentPrize,
     isFetching: isFetchingCurrentPrize,
     refetch: refetchCurrentPrize,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getCurrentPrize',
-    query: {
-      refetchInterval: REFRESH_INTERVAL,
-    },
+    refetchInterval: REFRESH_INTERVAL,
   });
 
   const {
     data: ticketPrice,
     isLoading: isLoadingTicketPrice,
     refetch: refetchTicketPrice,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getTicketPrice',
   });
 
@@ -76,9 +67,7 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingLotteryState,
     isFetching: isFetchingLotteryState,
     refetch: refetchLotteryState,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getLotteryState',
   });
 
@@ -87,9 +76,7 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingWinner,
     isFetching: isFetchingWinner,
     refetch: refetchWinner,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getWinner',
   });
 
@@ -98,14 +85,10 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingIsRegistered,
     isFetching: isFetchingIsRegistered,
     refetch: refetchIsRegistered,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'isRegistered',
     args: [address!],
-    query: {
-      enabled: isConnected && !!address,
-    },
+    enabled: isConnected && !!address,
   });
 
   const {
@@ -113,14 +96,10 @@ export const useHomeStatus = (): HomeStatus => {
     isLoading: isLoadingUserTicket,
     isFetching: isFetchingUserTicket,
     refetch: refetchUserTicket,
-  } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  } = useContractRead({
     functionName: 'getUserTicket',
     args: [address!],
-    query: {
-      enabled: isConnected && !!address,
-    },
+    enabled: isConnected && !!address,
   });
 
   const onRefreshData = async () => {

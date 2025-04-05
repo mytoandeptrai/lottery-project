@@ -1,55 +1,43 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { MIN_PARTICIPANTS, TOAST_MESSAGES } from '@/constants/lottery';
 import { useTrackingStore } from '@/stores/tracking-store';
+import type { WheelState } from '@/types/lottery';
 import { parseContractError } from '@/utils/common';
 import { REFRESH_INTERVAL } from '@/utils/const';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { formatEther } from 'viem';
-import {
-  type BaseError,
-  useAccount,
-  useReadContract,
-  useWaitForTransactionReceipt,
-  useWatchContractEvent,
-  useWriteContract,
-} from 'wagmi';
+import { type BaseError, useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useContractRead } from './use-contract-read';
+import { useLotteryEvents } from './use-lottery-events';
 
 export const useWheel = () => {
   const { isConnected, isConnecting, address } = useAccount();
-  const [mustSpin, setMustSpin] = useState(false);
-  const [prizeNumber, setPrizeNumber] = useState(0);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [isPerformingDraw, setIsPerformingDraw] = useState(false);
-  const [isNoWinner, setIsNoWinner] = useState(false);
   const { shouldRefresh } = useTrackingStore();
 
+  // State management
+  const [state, setState] = useState<WheelState>({
+    mustSpin: false,
+    isSpinning: false,
+    prizeNumber: 0,
+    isPerformingDraw: false,
+    isNoWinner: false,
+  });
+
   /** Read contract */
-  const { data: currentPrize } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: currentPrize } = useContractRead({
     functionName: 'getCurrentPrize',
-    query: {
-      refetchInterval: REFRESH_INTERVAL,
-    },
+    refetchInterval: REFRESH_INTERVAL,
   });
 
-  const { data: participantCount } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: participantCount } = useContractRead({
     functionName: 'getParticipantCount',
-    query: {
-      refetchInterval: REFRESH_INTERVAL,
-    },
+    refetchInterval: REFRESH_INTERVAL,
   });
 
-  const { data: isOwner } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: isOwner } = useContractRead({
     functionName: 'isOwner',
     args: [address],
-    query: {
-      enabled: !!address && isConnected,
-    },
+    enabled: !!address && isConnected,
   });
 
   /** Write contract */
@@ -60,66 +48,46 @@ export const useWheel = () => {
     hash,
   });
 
-  // Listen for DrawResult event
-  useWatchContractEvent({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
-    eventName: 'DrawResult',
-    onLogs(logs: any) {
-      if (logs && logs.length > 0) {
-        const log = logs[0];
-        const winningTicket = Number(log.args.winningTicket);
-        const winner = log.args.winner;
+  // Event handlers
+  const handleDrawResult = useCallback((winningTicket: number) => {
+    setState((prev) => ({
+      ...prev,
+      mustSpin: true,
+      isSpinning: true,
+      prizeNumber: winningTicket,
+    }));
+  }, []);
 
-        const storageData = localStorage.getItem('lottery_winners');
-        if (storageData) {
-          const parsedData = JSON.parse(storageData);
-          const formattedData = [
-            ...parsedData,
-            {
-              address: winner,
-              ticketId: winningTicket,
-              date: new Date(),
-              prizePool: currentPrize ? formatEther(currentPrize as bigint) : '0',
-            },
-          ];
-          localStorage.setItem('lottery_winners', JSON.stringify(formattedData));
-        }
+  const handleNoWinner = useCallback((winningTicket: number) => {
+    setState((prev) => ({
+      ...prev,
+      mustSpin: true,
+      isSpinning: true,
+      prizeNumber: winningTicket,
+      isNoWinner: true,
+    }));
+  }, []);
 
-        setMustSpin(true);
-        setIsSpinning(true);
-        setPrizeNumber(winningTicket);
-      }
-    },
+  // Contract events
+  useLotteryEvents({
+    onDrawResult: handleDrawResult,
+    onNoWinner: handleNoWinner,
+    currentPrize: currentPrize as bigint | undefined,
   });
 
-  useWatchContractEvent({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
-    eventName: 'NoWinner',
-    onLogs(logs: any) {
-      if (logs && logs.length > 0) {
-        const log = logs[0];
-        const winningTicket = Number(log.args.winningTicket);
-        setMustSpin(true);
-        setIsSpinning(true);
-        setPrizeNumber(winningTicket);
-        setIsNoWinner(true);
-      }
-    },
-  });
-
+  // Actions
   const handleSpinClick = async () => {
-    if (isSpinning || isPerformingDraw) return;
+    if (state.isSpinning || state.isPerformingDraw) return;
 
-    if (!participantCount || Number(participantCount) < 5) {
-      toast.error('Not enough participants to perform a draw', {
-        description: 'Please wait for more participants to join the lottery',
+    if (!participantCount || Number(participantCount) < MIN_PARTICIPANTS) {
+      toast.error(TOAST_MESSAGES.NOT_ENOUGH_PARTICIPANTS.title, {
+        description: TOAST_MESSAGES.NOT_ENOUGH_PARTICIPANTS.description,
       });
       return;
     }
 
-    setIsPerformingDraw(true);
+    setState((prev) => ({ ...prev, isPerformingDraw: true }));
+
     try {
       await performDraw({
         address: ADDRESS_CONTRACT,
@@ -128,46 +96,51 @@ export const useWheel = () => {
       });
     } catch (error) {
       console.error('Error in handleSpinClick:', error);
+      setState((prev) => ({ ...prev, isPerformingDraw: false }));
     }
   };
 
-  const handleStopSpinning = () => {
-    setMustSpin(false);
-    setIsSpinning(false);
-    setIsPerformingDraw(false);
-    if (isNoWinner) {
-      toast.success('Draw Completed', {
-        description: `No winner this time, please try another time!`,
+  const handleStopSpinning = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      mustSpin: false,
+      isSpinning: false,
+      isPerformingDraw: false,
+    }));
+
+    if (state.isNoWinner) {
+      toast.success(TOAST_MESSAGES.DRAW_COMPLETED_NO_WINNER.title, {
+        description: TOAST_MESSAGES.DRAW_COMPLETED_NO_WINNER.description,
       });
-      setIsNoWinner(false);
+      setState((prev) => ({ ...prev, isNoWinner: false }));
     } else {
-      toast.success('Draw Completed', {
-        description: `Ticket ${prizeNumber} has been selected as the winner!`,
+      toast.success(TOAST_MESSAGES.DRAW_COMPLETED_WINNER(state.prizeNumber).title, {
+        description: TOAST_MESSAGES.DRAW_COMPLETED_WINNER(state.prizeNumber).description,
       });
     }
-    shouldRefresh();
-  };
 
+    shouldRefresh();
+  }, [state.isNoWinner, state.prizeNumber, shouldRefresh]);
+
+  // Error handling
   useEffect(() => {
     if (confirmError) {
       toast.error(parseContractError(confirmError as BaseError), {
-        description: 'Please try again',
+        description: TOAST_MESSAGES.ERROR.description,
       });
-      setIsPerformingDraw(false);
+      setState((prev) => ({ ...prev, isPerformingDraw: false }));
     }
 
     if (isPerformingDrawPending) {
-      toast.info('Waiting for the confirmation before the wheel spins automatically...');
+      toast.info(TOAST_MESSAGES.WAITING_CONFIRMATION);
     }
   }, [confirmError, isPerformingDrawPending]);
 
   return {
-    mustSpin,
-    isSpinning,
+    ...state,
     isConnected,
     isConnecting,
-    prizeNumber,
-    isPerformingDraw: isPerformingDraw || isPerformingDrawPending || isConfirming,
+    isPerformingDraw: state.isPerformingDraw || isPerformingDrawPending || isConfirming,
     isIndexingScan: isPerformingDrawPending || isConfirming,
     isOwner: Boolean(isOwner),
     handleSpinClick,

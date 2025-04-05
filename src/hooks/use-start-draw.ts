@@ -1,72 +1,35 @@
-import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
-import { useTrackingStore } from '@/stores/tracking-store';
-import { handleToastError } from '@/utils/common';
-import { useCallback, useEffect } from 'react';
-import { toast } from 'sonner';
-import { type BaseError, useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { TOAST_MESSAGES } from '@/constants/messages';
+import { useAccount } from 'wagmi';
+import { useContractRead } from './use-contract-read';
+import { useContractTransaction } from './use-contract-transaction';
 
 export const useStartDraw = () => {
   const { isConnected } = useAccount();
-  const { shouldRefresh } = useTrackingStore();
 
   /** Read contract */
-  const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useContractRead({
     functionName: 'isDrawCompleted',
   });
 
   /** Write contract */
   const {
-    writeContractAsync: startNewDraw,
-    isPending: isStartingNewDraw,
-    data: startNewDrawHash,
-    error: startNewDrawError,
-    reset: resetStartNewDraw,
-  } = useWriteContract();
-
-  /** Wait for transaction receipt */
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash: startNewDrawHash,
+    execute: onStartNewDraw,
+    isExecuting: isStartingNewDraw,
+    isDisabled,
+  } = useContractTransaction({
+    functionName: 'startNewDraw',
+    args: [new Date().getTime()],
+    successMessage: TOAST_MESSAGES.START_DRAW.SUCCESS,
+    waitingMessage: TOAST_MESSAGES.START_DRAW.WAITING,
   });
 
-  /** Functionalities */
-  const onStartNewDraw = useCallback(async () => {
-    try {
-      await startNewDraw({
-        address: ADDRESS_CONTRACT,
-        abi: ABI,
-        functionName: 'startNewDraw',
-        args: [new Date().getTime()],
-      });
-    } catch (error) {
-      handleToastError(error as BaseError);
-    }
-  }, [startNewDraw]);
-
   const isDisabledBtn =
-    !isConnected ||
-    isStartingNewDraw ||
-    isLoadingIsDrawCompleted ||
-    isDrawCompleted === false ||
-    isConfirming ||
-    isConfirmed;
+    !isConnected || isStartingNewDraw || isLoadingIsDrawCompleted || isDrawCompleted === false || isDisabled;
 
   const hasStartedNewDraw = isDrawCompleted === false;
 
-  useEffect(() => {
-    if (isConfirmed) {
-      toast.success('Draw started successfully');
-      shouldRefresh();
-    }
-
-    if (isConfirming) {
-      toast.info('Waiting for the confirmation...');
-    }
-  }, [isConfirming, isConfirmed, shouldRefresh]);
-
   return {
-    isDrawing: isStartingNewDraw || isConfirming,
+    isDrawing: isStartingNewDraw,
     hasStartedNewDraw,
     isDisabledBtn,
     onStartNewDraw,

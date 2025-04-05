@@ -1,11 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { FAKE_WINNER } from '@/constants/lottery';
 import { useHomeStatus } from '@/hooks/use-home-status';
 import { formatAddress } from '@/utils/common';
 import { Loader2, RefreshCw } from 'lucide-react';
 import React from 'react';
 import Loading from './loading';
+
 const HomeStatus = () => {
   const {
     participantCount,
@@ -53,7 +55,7 @@ const HomeStatus = () => {
           <span className='text-muted-foreground'>Draw Status:</span>
           <Badge variant={lotteryState === 'COMPLETED' ? 'default' : 'outline'}>{lotteryState}</Badge>
         </div>
-        {lotteryState === 'COMPLETED' && winner && (
+        {winner && winner !== FAKE_WINNER && (
           <div className='flex justify-between'>
             <span className='text-muted-foreground'>Winner:</span>
             <span className='font-medium'>{formatAddress(winner)}</span>

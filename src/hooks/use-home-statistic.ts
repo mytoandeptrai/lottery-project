@@ -1,8 +1,6 @@
-import { ADDRESS_CONTRACT } from '@/config/smart-contract';
-
-import { ABI } from '@/config/smart-contract';
 import { REFRESH_INTERVAL } from '@/utils/const';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount } from 'wagmi';
+import { useContractRead } from './use-contract-read';
 
 type HomeStatistic = {
   participants: string[] | undefined;
@@ -15,18 +13,12 @@ export const useHomeStatistic = (): HomeStatistic => {
   const { isConnected, isConnecting } = useAccount();
 
   /** Read Contract */
-  const { data: participants, isLoading: isLoadingParticipants } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: participants, isLoading: isLoadingParticipants } = useContractRead({
     functionName: 'getParticipants',
-    query: {
-      refetchInterval: REFRESH_INTERVAL,
-    },
+    refetchInterval: REFRESH_INTERVAL,
   });
 
-  const { data: participantCount, isLoading: isLoadingParticipantCount } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
+  const { data: participantCount, isLoading: isLoadingParticipantCount } = useContractRead({
     functionName: 'getParticipantCount',
   });
 

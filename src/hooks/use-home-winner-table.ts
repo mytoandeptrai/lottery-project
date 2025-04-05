@@ -1,43 +1,31 @@
 import { useTrackingStore } from '@/stores/tracking-store';
+import type { LotteryWinner } from '@/types/lottery';
 import { DEFAULT_POLLING_INTERVAL } from '@/utils/const';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-
-export interface Winner {
-  address: string;
-  ticketId: number;
-  date: Date;
-  prizePool: string;
-}
+import { useWinnersStorage } from './use-winners-storage';
 
 export const useHomeWinnerTable = () => {
   const { isConnected, isConnecting } = useAccount();
-  const [winners, setWinners] = useState<Winner[]>([]);
+  const [winners, setWinners] = useState<LotteryWinner[]>([]);
   const { refreshNumber } = useTrackingStore();
+  const { getWinners } = useWinnersStorage();
 
   useEffect(() => {
     const loadWinnersFromStorage = () => {
       try {
-        const storageData = localStorage.getItem('lottery_winners');
-        if (storageData) {
-          const parsedData = JSON.parse(storageData);
-          const formattedData = parsedData.map((winner: Winner) => ({
-            ...winner,
-            date: new Date(winner.date),
-          }));
-          setWinners(formattedData);
-        }
+        const storedWinners = getWinners();
+        setWinners(storedWinners);
       } catch (error) {
         console.error('Error loading winners from storage:', error);
         setWinners([]);
       }
     };
 
-    // Load data immediately
     loadWinnersFromStorage();
 
+    // Load data every 10 seconds
     const interval = setInterval(loadWinnersFromStorage, DEFAULT_POLLING_INTERVAL);
-
     return () => clearInterval(interval);
   }, [refreshNumber]);
 
