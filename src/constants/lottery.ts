@@ -1,4 +1,5 @@
 export const MIN_PARTICIPANTS = 5;
+export const POLLING_INTERVAL_EVENTS = 5000;
 export const LOCAL_STORAGE_KEY = 'lottery_winners';
 export const TOAST_MESSAGES = {
   NOT_ENOUGH_PARTICIPANTS: {

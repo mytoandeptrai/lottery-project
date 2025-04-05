@@ -1,4 +1,5 @@
 import { ABI, ADDRESS_CONTRACT } from '@/config/smart-contract';
+import { POLLING_INTERVAL_EVENTS } from '@/constants/lottery';
 import type { DrawResultEvent, NoWinnerEvent } from '@/types/lottery';
 import { useCallback } from 'react';
 import { useWatchContractEvent } from 'wagmi';
@@ -43,6 +44,8 @@ export const useLotteryEvents = ({ onDrawResult, onNoWinner, currentPrize }: Use
     address: ADDRESS_CONTRACT,
     abi: ABI,
     eventName: 'DrawResult',
+    pollingInterval: POLLING_INTERVAL_EVENTS,
+    batch: true,
     onLogs: handleDrawResult,
   });
 
@@ -50,6 +53,8 @@ export const useLotteryEvents = ({ onDrawResult, onNoWinner, currentPrize }: Use
     address: ADDRESS_CONTRACT,
     abi: ABI,
     eventName: 'NoWinner',
+    pollingInterval: POLLING_INTERVAL_EVENTS,
+    batch: true,
     onLogs: handleNoWinner,
   });
 };
