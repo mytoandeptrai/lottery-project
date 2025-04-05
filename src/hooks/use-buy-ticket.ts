@@ -1,5 +1,5 @@
 import { TOAST_MESSAGES } from '@/constants/messages';
-import { TICKET_PRICE } from '@/utils/const';
+import { REFRESH_INTERVAL, TICKET_PRICE } from '@/utils/const';
 import { useAccount } from 'wagmi';
 import { useContractRead } from './use-contract-read';
 import { useContractTransaction } from './use-contract-transaction';
@@ -10,6 +10,7 @@ export const useBuyTicket = () => {
   /** Read Contract */
   const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useContractRead({
     functionName: 'isDrawCompleted',
+    refetchInterval: REFRESH_INTERVAL,
   });
 
   const {

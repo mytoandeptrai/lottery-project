@@ -3,7 +3,7 @@ import { useStartDraw } from '@/hooks/use-start-draw';
 import { Loader2, Trophy } from 'lucide-react';
 import React from 'react';
 const StartNewDrawAction = () => {
-  const { isDisabledBtn, onStartNewDraw, isDrawing, hasStartedNewDraw } = useStartDraw();
+  const { isDisabledBtn, onStartNewDraw, isDrawing, hasStartedNewDraw, hasWinnerNotClaimed } = useStartDraw();
 
   const text = () => {
     if (hasStartedNewDraw) {
@@ -18,6 +18,14 @@ const StartNewDrawAction = () => {
       return (
         <>
           <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Starting New Draw...
+        </>
+      );
+    }
+
+    if (hasWinnerNotClaimed) {
+      return (
+        <>
+          <Trophy className='mr-2 h-4 w-4' /> The winner has not claimed their prize
         </>
       );
     }

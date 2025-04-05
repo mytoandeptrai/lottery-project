@@ -104,5 +104,5 @@ export const parseContractError = (error: unknown): string | null => {
     return error.message;
   }
 
-  return 'Unknown error';
+  return 'Out of gas';
 };

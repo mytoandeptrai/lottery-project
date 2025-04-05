@@ -9,6 +9,21 @@ const wheelData = Array.from({ length: 10 }, (_, i) => ({
   option: `Ticket ${i + 1}`,
 }));
 
+const backgroundColors = [
+  '#3f297e',
+  '#175fa9',
+  '#169ed8',
+  '#239b63',
+  '#64b031',
+  '#efe61f',
+  '#f7a416',
+  '#e6471d',
+  '#dc0936',
+  '#e5177b',
+];
+
+const textColors = ['#f5f5f5'];
+
 const HomeWheel = () => {
   const {
     isConnected,
@@ -21,6 +36,18 @@ const HomeWheel = () => {
     handleStopSpinning,
     handleSpinClick,
   } = useWheel();
+
+  const text = () => {
+    if (isIndexingScan) {
+      return 'Waiting...';
+    }
+
+    if (isSpinning) {
+      return 'Spinning...';
+    }
+
+    return 'Spin';
+  };
 
   if (isConnecting) return <Loading />;
 
@@ -44,7 +71,7 @@ const HomeWheel = () => {
               mustStartSpinning={mustSpin}
               prizeNumber={prizeNumber}
               onStopSpinning={handleStopSpinning}
-              textColors={['#f5f5f5']}
+              textColors={textColors}
               spinDuration={1}
               outerBorderWidth={3}
               innerBorderWidth={2}
@@ -53,18 +80,7 @@ const HomeWheel = () => {
               perpendicularText={false}
               textDistance={60}
               outerBorderColor='#f5f5f5'
-              backgroundColors={[
-                '#3f297e',
-                '#175fa9',
-                '#169ed8',
-                '#239b63',
-                '#64b031',
-                '#efe61f',
-                '#f7a416',
-                '#e6471d',
-                '#dc0936',
-                '#e5177b',
-              ]}
+              backgroundColors={backgroundColors}
             />
             <div className='absolute inset-0 z-50 flex items-center justify-center'>
               <div className='ml-2 rounded-full bg-white shadow-lg sm:ml-0 sm:p-0.5 md:p-1'>
@@ -75,7 +91,7 @@ const HomeWheel = () => {
                   className='h-10 w-10 rounded-full font-normal text-sm transition-transform hover:scale-105 md:h-20 md:w-20 md:font-bold'
                   variant='outline'
                 >
-                  {isSpinning ? 'Spinning...' : 'Spin'}
+                  {text()}
                 </Button>
               </div>
             </div>
