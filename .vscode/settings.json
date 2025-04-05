@@ -42,5 +42,6 @@
   "[json]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "cSpell.words": ["tailwindcss"]
+  "cSpell.words": ["tailwindcss"],
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

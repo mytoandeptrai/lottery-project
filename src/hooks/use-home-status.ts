@@ -169,6 +169,6 @@ export const useHomeStatus = (): HomeStatus => {
     ticketPrice: ticketPrice ? formatEther(ticketPrice as bigint) : '0',
     isFetchingAll,
     onRefreshData,
-    lotteryState: LOTTERY_MAPPING[(lotteryState ?? 'UNKNOWN') as keyof typeof LOTTERY_MAPPING],
+    lotteryState: LOTTERY_MAPPING[(lotteryState ?? 'UNKNOWN') as keyof typeof LOTTERY_MAPPING] ?? 'UNKNOWN',
   };
 };

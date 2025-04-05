@@ -11,29 +11,31 @@ export const useClaimPrize = () => {
   const { shouldRefresh } = useTrackingStore();
 
   /** Read Contract */
-  const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useReadContract({
-    address: ADDRESS_CONTRACT,
-    abi: ABI,
-    functionName: 'isDrawCompleted',
-  });
-
-  const { data: winner, isLoading: isLoadingWinner } = useReadContract({
+  const {
+    data: winner,
+    isLoading: isLoadingWinner,
+    refetch: refetchWinner,
+  } = useReadContract({
     address: ADDRESS_CONTRACT,
     abi: ABI,
     functionName: 'getWinner',
   });
 
+  const { data: isPrizeWithdrawn, refetch: refetchIsPrizeWithdrawn } = useReadContract({
+    address: ADDRESS_CONTRACT,
+    abi: ABI,
+    functionName: 'isPrizeWithdrawn',
+  });
+
   /** Write Contract */
-  const {
-    writeContractAsync: claimPrize,
-    data: claimPrizeHash,
-    isPending: isClaimingPrize,
-    error: claimPrizeError,
-    reset: resetClaimPrize,
-  } = useWriteContract();
+  const { writeContractAsync: claimPrize, data: claimPrizeHash, isPending: isClaimingPrize } = useWriteContract();
 
   /** Wait for Transaction Receipt */
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: claimPrizeError,
+  } = useWaitForTransactionReceipt({
     hash: claimPrizeHash,
   });
 
@@ -45,30 +47,32 @@ export const useClaimPrize = () => {
         functionName: 'withdrawPrize',
       });
     } catch (error) {
-      handleToastError(error as BaseError);
+      console.error(error);
     }
   }, [claimPrize]);
-
-  const isDisabledBtn =
-    !isConnected || isClaimingPrize || isLoadingIsDrawCompleted || isConfirming || isConfirmed || isLoadingWinner;
-
-  const shouldShowClaimPrize = winner === address;
 
   useEffect(() => {
     if (isConfirmed) {
       toast.success('Claim prize successfully, Please check your wallet!');
+      refetchWinner();
+      refetchIsPrizeWithdrawn();
       shouldRefresh();
     }
 
     if (isConfirming) {
       toast.info('Waiting for the confirmation...');
     }
-  }, [isConfirming, isConfirmed, shouldRefresh]);
+
+    if (claimPrizeError) {
+      handleToastError(claimPrizeError as BaseError);
+    }
+  }, [isConfirming, isConfirmed, shouldRefresh, claimPrizeError, refetchWinner, refetchIsPrizeWithdrawn]);
 
   return {
-    isDisabledBtn,
-    onClaimPrize,
+    isDisabledBtn: !isConnected || isClaimingPrize || isConfirming || isLoadingWinner,
     isClaimingPrize: isClaimingPrize || isConfirming,
-    shouldShowClaimPrize,
+    shouldShowClaimPrize: winner === address,
+    hasClaimedPrize: Boolean(isPrizeWithdrawn) && winner === address,
+    onClaimPrize,
   };
 };

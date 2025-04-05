@@ -155,7 +155,11 @@ export const useWheel = () => {
       });
       setIsPerformingDraw(false);
     }
-  }, [confirmError]);
+
+    if (isPerformingDrawPending) {
+      toast.info('Waiting for the confirmation before the wheel spins automatically...');
+    }
+  }, [confirmError, isPerformingDrawPending]);
 
   return {
     mustSpin,
@@ -164,6 +168,7 @@ export const useWheel = () => {
     isConnecting,
     prizeNumber,
     isPerformingDraw: isPerformingDraw || isPerformingDrawPending || isConfirming,
+    isIndexingScan: isPerformingDrawPending || isConfirming,
     isOwner: Boolean(isOwner),
     handleSpinClick,
     handleStopSpinning,

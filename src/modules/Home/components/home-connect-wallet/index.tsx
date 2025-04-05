@@ -73,7 +73,7 @@ const HomeConnectWallet = () => {
             </div>
           </div>
 
-          <div className='w-full border-primary/10 p-4 sm:w-auto sm:border-l'>
+          <div className='w-full border-primary/10 border-t p-4 sm:w-auto sm:border-t-0 sm:border-l'>
             <div>
               <Button
                 variant='outline'

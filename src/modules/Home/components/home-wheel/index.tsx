@@ -10,8 +10,17 @@ const wheelData = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 const HomeWheel = () => {
-  const { isConnected, isConnecting, mustSpin, prizeNumber, isSpinning, isOwner, handleStopSpinning, handleSpinClick } =
-    useWheel();
+  const {
+    isConnected,
+    isConnecting,
+    mustSpin,
+    prizeNumber,
+    isSpinning,
+    isOwner,
+    isIndexingScan,
+    handleStopSpinning,
+    handleSpinClick,
+  } = useWheel();
 
   if (isConnecting) return <Loading />;
 
@@ -58,15 +67,15 @@ const HomeWheel = () => {
               ]}
             />
             <div className='absolute inset-0 z-50 flex items-center justify-center'>
-              <div className='rounded-full bg-white p-1 shadow-lg'>
+              <div className='ml-2 rounded-full bg-white shadow-lg sm:ml-0 sm:p-0.5 md:p-1'>
                 <Button
                   onClick={handleSpinClick}
-                  disabled={isSpinning || !isOwner}
+                  disabled={isSpinning || !isOwner || isIndexingScan}
                   size='lg'
-                  className='h-20 w-20 rounded-full font-bold text-sm transition-transform hover:scale-105'
+                  className='h-10 w-10 rounded-full font-normal text-sm transition-transform hover:scale-105 md:h-20 md:w-20 md:font-bold'
                   variant='outline'
                 >
-                  {isSpinning ? 'Spinning...' : 'SPIN'}
+                  {isSpinning ? 'Spinning...' : 'Spin'}
                 </Button>
               </div>
             </div>

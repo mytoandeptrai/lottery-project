@@ -34,18 +34,13 @@ export const useBuyTicket = () => {
   });
 
   /** Write Contract */
-  const {
-    writeContractAsync: buyTicket,
-    data: buyTicketHash,
-    isPending: isBuyingTicket,
-    error: buyTicketError,
-  } = useWriteContract();
+  const { writeContractAsync: buyTicket, data: buyTicketHash, isPending: isBuyingTicket } = useWriteContract();
 
   /** Wait for Transaction Receipt */
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
-    error,
+    error: buyTicketError,
   } = useWaitForTransactionReceipt({
     hash: buyTicketHash,
   });
@@ -60,7 +55,7 @@ export const useBuyTicket = () => {
         value: BigInt(TICKET_PRICE),
       });
     } catch (error) {
-      handleToastError(error as BaseError);
+      console.error(error);
     }
   }, [buyTicket]);
 
@@ -69,7 +64,6 @@ export const useBuyTicket = () => {
     !isConnected ||
     isBuyingTicket ||
     isConfirming ||
-    isConfirmed ||
     isLoadingIsRegistered ||
     isRegistered === true ||
     isDrawCompleted === true;
@@ -84,7 +78,11 @@ export const useBuyTicket = () => {
     if (isConfirming) {
       toast.info('Waiting for the confirmation...');
     }
-  }, [isConfirming, isConfirmed, shouldRefresh, refetchIsRegistered]);
+
+    if (buyTicketError) {
+      handleToastError(buyTicketError as BaseError);
+    }
+  }, [isConfirming, isConfirmed, shouldRefresh, refetchIsRegistered, buyTicketError]);
 
   return {
     isDisabledBtn,

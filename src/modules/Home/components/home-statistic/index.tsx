@@ -21,9 +21,14 @@ const HomeStatistic = () => {
         <CardDescription>List of all participants in the current lottery</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-1 md:grid-cols-3 lg:grid-cols-5'>
           {participants.map((participant, index) => (
-            <Badge key={index} variant={'outline'} className='justify-center py-2' title={participant.toString()}>
+            <Badge
+              key={index}
+              variant={'outline'}
+              className='w-full justify-center py-2 sm:w-fit'
+              title={participant.toString()}
+            >
               {formatAddress(participant.toString(), 10)}
             </Badge>
           ))}
