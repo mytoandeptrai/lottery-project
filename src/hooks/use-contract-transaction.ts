@@ -4,7 +4,7 @@ import { useTrackingStore } from '@/stores/tracking-store';
 import { handleToastError } from '@/utils/common';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { type BaseError, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { type BaseError, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 interface UseContractTransactionProps {
   functionName: string;
@@ -24,6 +24,7 @@ export const useContractTransaction = ({
   waitingMessage = TOAST_MESSAGES.BUY_TICKET.WAITING,
 }: UseContractTransactionProps) => {
   const { shouldRefresh } = useTrackingStore();
+  const publicClient = usePublicClient();
 
   /** Write Contract */
   const { writeContractAsync: executeTransaction, data: hash, isPending: isExecuting } = useWriteContract();
@@ -39,6 +40,14 @@ export const useContractTransaction = ({
 
   const execute = useCallback(async () => {
     try {
+      await publicClient.simulateContract({
+        address: ADDRESS_CONTRACT,
+        abi: ABI,
+        functionName,
+        value,
+        args,
+      });
+
       await executeTransaction({
         address: ADDRESS_CONTRACT,
         abi: ABI,
@@ -49,7 +58,7 @@ export const useContractTransaction = ({
     } catch (error) {
       console.error(error);
     }
-  }, [executeTransaction, functionName, value, args]);
+  }, [executeTransaction, functionName, value, args, publicClient]);
 
   useEffect(() => {
     if (isConfirmed) {

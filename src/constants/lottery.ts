@@ -18,5 +18,13 @@ export const TOAST_MESSAGES = {
   ERROR: {
     description: 'Please try again',
   },
+  NOT_START_DRAW: {
+    title: 'Not started',
+    description: 'The draw has not started yet',
+  },
+  WAITING_FOR_PRIZE_CLAIM: {
+    title: 'Waiting for prize claim',
+    description: 'The prize is being claimed by the winner',
+  },
 } as const;
 export const FAKE_WINNER = '0x0000000000000000000000000000000000000000' as const;

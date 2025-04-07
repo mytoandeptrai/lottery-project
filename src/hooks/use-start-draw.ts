@@ -7,7 +7,11 @@ export const useStartDraw = () => {
   const { isConnected } = useAccount();
 
   /** Read contract */
-  const { data: isDrawCompleted, isLoading: isLoadingIsDrawCompleted } = useContractRead({
+  const {
+    data: isDrawCompleted,
+    isLoading: isLoadingIsDrawCompleted,
+    refetch: refetchIsDrawCompleted,
+  } = useContractRead({
     functionName: 'isDrawCompleted',
   });
 
@@ -21,6 +25,7 @@ export const useStartDraw = () => {
     args: [new Date().getTime()],
     successMessage: TOAST_MESSAGES.START_DRAW.SUCCESS,
     waitingMessage: TOAST_MESSAGES.START_DRAW.WAITING,
+    onSuccess: refetchIsDrawCompleted,
   });
 
   const isDisabledBtn =

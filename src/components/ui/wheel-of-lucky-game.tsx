@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { memo } from 'react';
 
 const Wheel = dynamic(() => import('react-custom-roulette').then((mod) => mod.Wheel), { ssr: false });
 
@@ -28,4 +29,4 @@ const WheelOfLuckyGame = (props: WheelOfLuckyGameProps) => {
   return <Wheel {...props} />;
 };
 
-export default WheelOfLuckyGame;
+export default memo(WheelOfLuckyGame);

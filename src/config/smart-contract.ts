@@ -58,8 +58,53 @@ const ABI = [
   { inputs: [], name: 'buyTicket', outputs: [], stateMutability: 'payable', type: 'function' },
   {
     inputs: [],
+    name: 'getCompletedDrawIds',
+    outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'getCurrentPrize',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '_drawId', type: 'uint256' }],
+    name: 'getDrawResult',
+    outputs: [
+      {
+        components: [
+          { internalType: 'uint256', name: 'drawId', type: 'uint256' },
+          { internalType: 'uint256', name: 'winningTicket', type: 'uint256' },
+          { internalType: 'address', name: 'winnerAddress', type: 'address' },
+          { internalType: 'bool', name: 'hasWinner', type: 'bool' },
+        ],
+        internalType: 'struct DLottery.DrawPerformResult',
+        name: '',
+        type: 'tuple',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getLatestDrawResult',
+    outputs: [
+      {
+        components: [
+          { internalType: 'uint256', name: 'drawId', type: 'uint256' },
+          { internalType: 'uint256', name: 'winningTicket', type: 'uint256' },
+          { internalType: 'address', name: 'winnerAddress', type: 'address' },
+          { internalType: 'bool', name: 'hasWinner', type: 'bool' },
+        ],
+        internalType: 'struct DLottery.DrawPerformResult',
+        name: '',
+        type: 'tuple',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
@@ -144,7 +189,19 @@ const ABI = [
   {
     inputs: [],
     name: 'performDraw',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        components: [
+          { internalType: 'uint256', name: 'drawId', type: 'uint256' },
+          { internalType: 'uint256', name: 'winningTicket', type: 'uint256' },
+          { internalType: 'address', name: 'winnerAddress', type: 'address' },
+          { internalType: 'bool', name: 'hasWinner', type: 'bool' },
+        ],
+        internalType: 'struct DLottery.DrawPerformResult',
+        name: '',
+        type: 'tuple',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -165,6 +222,6 @@ const ABI = [
   { inputs: [], name: 'unpause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   { inputs: [], name: 'withdrawPrize', outputs: [], stateMutability: 'nonpayable', type: 'function' },
 ];
-const ADDRESS_CONTRACT = '0x1FeEC79E4a69019550fFFeb271F1e085365CaDE6';
+const ADDRESS_CONTRACT = '0xD923882b4E5C5d6CfA061aDE4B5313d92d0aB502';
 
 export { ABI, ADDRESS_CONTRACT };
