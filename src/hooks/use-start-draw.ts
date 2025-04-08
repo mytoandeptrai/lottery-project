@@ -1,4 +1,5 @@
 import { TOAST_MESSAGES } from '@/constants/messages';
+import { useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { useContractRead } from './use-contract-read';
 import { useContractTransaction } from './use-contract-transaction';
@@ -15,6 +16,15 @@ export const useStartDraw = () => {
     functionName: 'isDrawCompleted',
   });
 
+  const { data: lotteryState, refetch: refetchLotteryState } = useContractRead({
+    functionName: 'getLotteryState',
+  });
+
+  const onSuccess = useCallback(() => {
+    refetchLotteryState();
+    refetchIsDrawCompleted();
+  }, [refetchLotteryState, refetchIsDrawCompleted]);
+
   /** Write contract */
   const {
     execute: onStartNewDraw,
@@ -25,7 +35,7 @@ export const useStartDraw = () => {
     args: [new Date().getTime()],
     successMessage: TOAST_MESSAGES.START_DRAW.SUCCESS,
     waitingMessage: TOAST_MESSAGES.START_DRAW.WAITING,
-    onSuccess: refetchIsDrawCompleted,
+    onSuccess,
   });
 
   const isDisabledBtn =
@@ -33,10 +43,13 @@ export const useStartDraw = () => {
 
   const hasStartedNewDraw = isDrawCompleted === false;
 
+  const hasWinnerNotClaimed = lotteryState && lotteryState === 'WAITING_FOR_PRIZE_CLAIM';
+
   return {
     isDrawing: isStartingNewDraw,
     hasStartedNewDraw,
     isDisabledBtn,
     onStartNewDraw,
+    hasWinnerNotClaimed,
   };
 };
