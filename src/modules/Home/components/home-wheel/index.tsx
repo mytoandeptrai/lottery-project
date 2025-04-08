@@ -37,6 +37,18 @@ const HomeWheel = () => {
     handleSpinClick,
   } = useWheel();
 
+  const text = () => {
+    if (isIndexingScan) {
+      return 'Waiting...';
+    }
+
+    if (isSpinning) {
+      return 'Spinning...';
+    }
+
+    return 'Spin';
+  };
+
   if (isConnecting) return <Loading />;
 
   if (!isConnected) return null;
@@ -79,7 +91,7 @@ const HomeWheel = () => {
                   className='h-10 w-10 rounded-full font-normal text-sm transition-transform hover:scale-105 md:h-20 md:w-20 md:font-bold'
                   variant='outline'
                 >
-                  {isSpinning ? 'Spinning...' : 'Spin'}
+                  {text()}
                 </Button>
               </div>
             </div>

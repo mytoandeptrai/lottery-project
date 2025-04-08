@@ -19,6 +19,8 @@ interface ILatestDrawResult {
 
 type LotteryState = 'NOT_STARTED' | 'READY_FOR_NEW_DRAW' | 'WAITING_FOR_PRIZE_CLAIM' | string;
 
+const GAS_LIMIT = BigInt(1000000);
+
 export const useWheel = () => {
   // Hooks
   const publicClient = usePublicClient();
@@ -106,8 +108,9 @@ export const useWheel = () => {
       });
       setState((prev) => ({ ...prev, isNoWinner: false }));
     } else {
-      toast.success(TOAST_MESSAGES.DRAW_COMPLETED_WINNER(state.prizeNumber).title, {
-        description: TOAST_MESSAGES.DRAW_COMPLETED_WINNER(state.prizeNumber).description,
+      const prizeNumber = state.prizeNumber + 1;
+      toast.success(TOAST_MESSAGES.DRAW_COMPLETED_WINNER(prizeNumber).title, {
+        description: TOAST_MESSAGES.DRAW_COMPLETED_WINNER(prizeNumber).description,
       });
     }
 
@@ -139,15 +142,15 @@ export const useWheel = () => {
         address: ADDRESS_CONTRACT,
         abi: ABI,
         functionName: 'performDraw',
+        gas: GAS_LIMIT,
       });
 
       await publicClient.waitForTransactionReceipt({ hash, confirmations: NUMBER_OF_BLOCK_CONFIRMATION });
       const drawResult = await fetchLatestDrawResult();
 
       if (!drawResult) return;
-
       const { winningTicket, winnerAddress, hasWinner } = drawResult;
-
+      const latestWinningTicket = Number(winningTicket) - 1;
       if (hasWinner) {
         saveWinner(winnerAddress, Number(winningTicket), currentPrize as bigint);
       }
@@ -156,7 +159,7 @@ export const useWheel = () => {
         ...prev,
         mustSpin: true,
         isSpinning: true,
-        prizeNumber: Number(winningTicket),
+        prizeNumber: latestWinningTicket,
         isNoWinner: !hasWinner,
       }));
     } catch (error) {

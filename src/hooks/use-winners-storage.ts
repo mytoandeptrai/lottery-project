@@ -23,7 +23,12 @@ export const useWinnersStorage = () => {
 
   const getWinners = (): LotteryWinner[] => {
     const storageData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return storageData ? JSON.parse(storageData) : [];
+    if (!storageData) return [];
+
+    const winners = JSON.parse(storageData);
+    return winners.sort((a: LotteryWinner, b: LotteryWinner) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
   };
 
   return {

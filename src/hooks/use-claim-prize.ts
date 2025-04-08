@@ -35,6 +35,7 @@ export const useClaimPrize = () => {
     successMessage: TOAST_MESSAGES.CLAIM_PRIZE.SUCCESS,
     waitingMessage: TOAST_MESSAGES.CLAIM_PRIZE.WAITING,
     onSuccess,
+    shouldEstimateGas: false,
   });
 
   return {
