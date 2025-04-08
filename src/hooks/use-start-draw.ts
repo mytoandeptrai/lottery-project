@@ -38,12 +38,17 @@ export const useStartDraw = () => {
     onSuccess,
   });
 
-  const isDisabledBtn =
-    !isConnected || isStartingNewDraw || isLoadingIsDrawCompleted || isDrawCompleted === false || isDisabled;
-
   const hasStartedNewDraw = isDrawCompleted === false;
 
   const hasWinnerNotClaimed = lotteryState && lotteryState === 'WAITING_FOR_PRIZE_CLAIM';
+
+  const isDisabledBtn =
+    !isConnected ||
+    isStartingNewDraw ||
+    isLoadingIsDrawCompleted ||
+    isDrawCompleted === false ||
+    isDisabled ||
+    Boolean(hasWinnerNotClaimed);
 
   return {
     isDrawing: isStartingNewDraw,
