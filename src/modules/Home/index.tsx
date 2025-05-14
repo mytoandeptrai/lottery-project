@@ -14,6 +14,7 @@ const Home = () => {
         <HomeTitle />
         <HomeConnectWallet />
       </div>
+
       <HomeLanding />
       <HomeInformation />
       <HomeStatistic />
